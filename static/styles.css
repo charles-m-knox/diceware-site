@@ -1,0 +1,28 @@
+body {
+    margin-top: 3em;
+}
+
+.footer-spacer {
+    margin-top: 3em !important;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.dual-btn-input {
+    border-radius: 0px !important;
+}
+
+.mr-0 {
+    margin-right: 0px !important;
+}
+
+.modal-position-sticky {
+    top: 25%;
+    position: sticky;
+}
+
+.topmost-row {
+    margin-top: 15px;
+}
