@@ -1,0 +1,18 @@
+[Unit]
+Description=Runs a diceware password generation website on port 29102.
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=simple
+User=1000
+Group=1000
+WorkingDirectory=/opt/diceware-site
+ExecStart=/opt/diceware-site/diceware-site
+ProtectSystem=full
+LimitNOFILE=1048576
+LimitNPROC=512
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

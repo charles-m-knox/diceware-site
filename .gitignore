@@ -23,7 +23,6 @@ go.work
 
 resources/words_*.txt
 resources/wordlist*.txt
-diceware-site*
 diceware-site
 cert.pem
 key.pem
