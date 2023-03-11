@@ -26,3 +26,4 @@ resources/wordlist*.txt
 diceware-site
 cert.pem
 key.pem
+deploy.sh
