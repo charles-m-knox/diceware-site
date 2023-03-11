@@ -15,5 +15,5 @@ const (
 	CACHECONTROL_HEADER_VALUE    = "private, max-age=604800"
 	CONTENTENCODING_HEADER       = "Content-Encoding"
 	CONTENTENCODING_HEADER_VALUE = "gzip"
-	ROBOTSTXT                    = "User-agent: *\nDisallow: /"
+	ROBOTSTXT                    = "User-agent: *\nDisallow: /\n"
 )
