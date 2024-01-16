@@ -27,3 +27,5 @@ diceware-site
 cert.pem
 key.pem
 deploy.sh
+old/
+build/
