@@ -7,115 +7,90 @@
     <title>Diceware Password Generator</title>
     <link rel="stylesheet" type="text/css" href="/static/styles.min.css.gz">
     <link rel="stylesheet" type="text/css" href="/static/semantic-2.9.2.min.css.gz">
-    <script src=" /static/alpinejs-3.12.0.min.js.gz" defer>
-    </script>
 </head>
 
 <body>
-    <div x-data="{ pw: '{{ .pw }}', simpleWordCount: '{{ .simpleWordCount }}', extendedWordCount: '{{ .extendedWordCount }}', copied: false, loading: false, badpw: false, s: ' ', n: 3, l: 6, u: 64, e: false }"
-        class="ui grid container blurring">
-        <div class="ui page dimmer" x-bind:class="badpw == true ? 'active' : ''"></div>
-        <div class="ui modal modal-position-sticky" x-bind:class="badpw == true ? 'active' : ''" x-transition>
-            <div class="header">
-                Heads Up
-            </div>
-            <div class="content">
-                <div class="description">
-                    <p>
-                        The password generation settings you chose did not produce a result in a timely fashion, or
-                        there was a network error.
-                    </p>
-                    <p>
-                        To prevent abuse of this free service, <b>any password generation requests that take longer than
-                            <u>one second</u> will be canceled.</b> Try different settings, such as reducing the number
-                        of words, or increasing the minimum password length.
-                    </p>
-                </div>
-            </div>
-            <div class="actions">
-                <div class="ui button" @click="badpw = false">OK</div>
-            </div>
-        </div>
+    <div class="ui grid container">
         <div class="row topmost-row">
             <div class="column">
                 <h1 class="ui center aligned header">Diceware Password Generator</h1>
                 <h3 class="ui center aligned header">Generates secure passwords that meet most site requirements</h3>
             </div>
         </div>
+        {{ if .failed }}
+        <div class="row">
+            <div class="column">
+                <p>
+                    The password generation settings you chose did not produce a result in a timely fashion, or
+                    there was a network error.
+                </p>
+                <p>
+                    To prevent abuse of this free service, <b>any password generation requests that take longer than
+                        <u>one second</u> will be canceled.</b> Try different settings, such as reducing the number
+                    of words, or increasing the minimum password length.
+                </p>
+            </div>
+        </div>
+        {{ end }}
         <div class="center aligned row">
-            <div class="column" x-cloak>
-                <div class="ui right action input w-100" x-bind:class="pw === '' ? 'error' : ''">
-                    <input type="text" x-model="pw" class="dual-btn-input" value="{{ .pw }}" style="cursor: pointer;"
-                        x-on:click="navigator.clipboard.writeText(pw); copied = true; setTimeout(() => { copied = false; }, 1000)"
+            <div class="column">
+                <div class="ui right action input w-100{{ if .failed }} error{{ end }}">
+                    <input type="text" class="dual-btn-input" value="{{ .pw }}" style="cursor: pointer;"
                         placeholder="Try different settings" readonly>
-                    <button class="ui primary button" x-bind:disabled="copied"
-                        x-on:click="navigator.clipboard.writeText(pw); copied = true; setTimeout(() => { copied = false; }, 1000)">
-                        <template x-if="copied">
-                            <!--<i class="check icon mr-0"></i>--><span class="mr-0">Copied!</span>
-                        </template>
-                        <template x-if="!copied">
-                            <!--<i class="copy icon mr-0"></i>--><span class="mr-0">Copy</span>
-                        </template>
-                    </button>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="column" x-cloak>
-                <button class="ui w-100 green button gen-btn-left-margin" x-bind:disabled="loading"
-                    x-on:click="loading = true; fetch(`/gen?s=${s}&n=${n}&l=${l}&u=${u}&e=${e}`).then((r) => r.json()).then((d) => { pw = d.p; loading = false; badpw = pw ? false : true;})">
-                    <template x-if="loading">
-                        <div class="ui active inline loader mini"></div>
-                    </template>
-                    <template x-if="!loading">
+        <form action="/nojs" method="post" id="pwform" target="_self" style="width: 100%;">
+            <div class="row">
+                <div class="column">
+                    <button type="submit" form="pwform" class="ui w-100 green button gen-btn-left-margin">
                         <!--<i class="redo icon mr-0"></i>--><span class="mr-0">Generate</span>
-                    </template>
-                </button>
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="column">
-                <div class="ui fluid form">
-                    <div class="fields">
-                        <div class="field" x-bind:class="pw === '' ? 'error' : ''">
-                            <label for="separator-input">Separator (space=default)</label>
-                            <input id="separator-input" type="text" placeholder="" x-model="s" value="">
-                        </div>
-                        <div class="field" x-bind:class="pw === '' ? 'error' : ''">
-                            <label for="numwords-input">Number of Words</label>
-                            <input id="numwords-input" type="number" placeholder="" x-model="n" value="" min="1"
-                                max="20">
-                        </div>
-                        <div class="field" x-bind:class="pw === '' ? 'error' : ''">
-                            <label for="maxlength-input">Max Length</label>
-                            <input id="maxlength-input" type="number" placeholder="" x-model="u" value="" min="12"
-                                max="256">
-                        </div>
-                        <div class="field" x-bind:class="pw === '' ? 'error' : ''">
-                            <label for="minlength-input">Min Length</label>
-                            <input id="minlength-input" type="number" placeholder="" x-model="l" value="" min="6"
-                                max="192">
-                        </div>
-                        <div class="field ui toggle checkbox" style="display: flex; align-items: center;"
-                            x-bind:class="pw === '' ? 'error' : ''">
-                            <input id="extended-words-input" type="checkbox" x-model="e" />
-                            <label for="extended-words-input">Use Extended Word List</label>
+            <div class="row">
+                <div class="column">
+                    <div class="ui fluid form">
+                        <div class="fields">
+                            <div class="field">
+                                <label for="s">Separator (space=default)</label>
+                                <input id="s" name="s" type="text" form="pwform" placeholder="" value="{{ .s }}">
+                            </div>
+                            <div class="field">
+                                <label for="n">Number of Words</label>
+                                <input id="n" name="n" type="number" form="pwform" placeholder="" value="{{ .nn }}"
+                                    min="1" max="20">
+                            </div>
+                            <div class="field">
+                                <label for="u">Max Length</label>
+                                <input id="u" name="u" type="number" form="pwform" placeholder=""
+                                    value="{{ .maxLenInt }}" min="12" max="256">
+                            </div>
+                            <div class="field">
+                                <label for="l">Min Length</label>
+                                <input id="l" name="l" type="number" form="pwform" placeholder=""
+                                    value="{{ .minLenInt }}" min="6" max="192">
+                            </div>
+                            <div class="field ui toggle checkbox" style="display: flex; align-items: center;">
+                                <input id="e" name="e" type="checkbox" form="pwform" {{ if .e }}checked{{ end }} />
+                                <label for="e">Use Extended Word List</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
         <div class="row">
             <div class="eight wide column">
                 <div class="ui label">
-                    Currently generated password length: <span x-text="pw.length || '0'"></span>
+                    Currently generated password length: <span>{{ .pwLength }}</span>
                 </div>
             </div>
             <div class="eight wide column">
                 <div class="ui label">
-                    <span x-text="simpleWordCount || '0'"></span>&nbsp;words in <a
-                        href="https://github.com/ulif/diceware" rel="noopener noreferrer nofollow">simple list</a>,
-                    <span x-text="extendedWordCount || '0'"></span>&nbsp;words in <a
+                    <span>{{ .simpleWordCount }}</span>&nbsp;words in <a href="https://github.com/ulif/diceware"
+                        rel="noopener noreferrer nofollow">simple list</a>,
+                    <span>{{ .extendedWordCount }}</span>&nbsp;words in <a
                         href="https://github.com/dwyl/english-words/blob/master/words_alpha.txt"
                         rel="noopener noreferrer nofollow">extended list</a>
                 </div>

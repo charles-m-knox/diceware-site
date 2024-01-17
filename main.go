@@ -25,6 +25,8 @@ import (
 //go:embed static/semantic-2.9.2.min.css.gz
 //go:embed static/styles.css
 //go:embed templates/index.html
+//go:embed templates/min.html
+//go:embed templates/nojs.html
 //go:embed static/fonts
 //go:embed static/favicon.ico
 var content embed.FS
@@ -32,6 +34,8 @@ var content embed.FS
 var (
 	Words     *utils.Words
 	Index     *template.Template
+	NoJs      *template.Template
+	Min       *template.Template
 	FontCache map[string][]byte
 
 	Alpinejs  []byte
@@ -95,6 +99,16 @@ func loadResources() {
 		log.Fatalf("failed to load from %v: %v", consts.PathIndex, err.Error())
 	}
 
+	nojsRaw, err := getFromEmbed(content, consts.PathNoJs)
+	if err != nil {
+		log.Fatalf("failed to load from %v: %v", consts.PathIndex, err.Error())
+	}
+
+	minRaw, err := getFromEmbed(content, consts.PathMin)
+	if err != nil {
+		log.Fatalf("failed to load from %v: %v", consts.PathIndex, err.Error())
+	}
+
 	iconRaw, err := getFromEmbed(content, consts.PathFavicon)
 	if err != nil {
 		log.Fatalf("failed to load from %v: %v", consts.PathFavicon, err.Error())
@@ -106,6 +120,16 @@ func loadResources() {
 	indexMini, err := m.Bytes("text/html", indexRaw)
 	if err != nil {
 		log.Fatalf("failed to minify index: %v", err.Error())
+	}
+
+	nojsMini, err := m.Bytes("text/html", nojsRaw)
+	if err != nil {
+		log.Fatalf("failed to minify nojs index: %v", err.Error())
+	}
+
+	minMini, err := m.Bytes("text/html", minRaw)
+	if err != nil {
+		log.Fatalf("failed to minify nojs index: %v", err.Error())
 	}
 
 	styles, err := m.Bytes("text/css", stylesRaw)
@@ -151,6 +175,16 @@ func loadResources() {
 	if err != nil {
 		log.Fatalf("failed to parse index html template: %v", err.Error())
 	}
+
+	NoJs, err = template.New(consts.PathIndex).Parse(string(nojsMini))
+	if err != nil {
+		log.Fatalf("failed to parse nojs html template: %v", err.Error())
+	}
+
+	Min, err = template.New(consts.PathIndex).Parse(string(minMini))
+	if err != nil {
+		log.Fatalf("failed to parse min html template: %v", err.Error())
+	}
 }
 
 // parseFlags parses the command line flags, using t as the translation map.
@@ -169,23 +203,9 @@ func main() {
 
 	loadResources()
 
-	routeAlpine := fmt.Sprintf("/%v", consts.PathAlpineJS)
-	routeSemantic := fmt.Sprintf("/%v", consts.PathSemantic)
-	routeStyles := fmt.Sprintf("/%v", consts.PathStyles)
-	routeFonts := fmt.Sprintf("/%v/:font", consts.PathFonts)
-	routeFavicon := "/favicon.ico"
-
 	FontCache = make(map[string][]byte)
 
-	http.HandleFunc("/", getIndex)
-	http.HandleFunc("/gen", getGenPassword)
-	http.HandleFunc("/robots.txt", getRobotsTxt)
-	http.HandleFunc("/healthcheck", getHealthCheck)
-	http.HandleFunc(routeFonts, getFonts)
-	http.HandleFunc(routeAlpine, getAlpine)
-	http.HandleFunc(routeSemantic, getSemantic)
-	http.HandleFunc(routeStyles, getStyles)
-	http.HandleFunc(routeFavicon, getFavicon)
+	http.HandleFunc("/", router)
 
 	srv := &http.Server{
 		ReadTimeout:  2 * time.Second,

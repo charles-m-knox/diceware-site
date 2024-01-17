@@ -12,6 +12,45 @@ import (
 	"gitea.cmcode.dev/cmcode/diceware-site/utils"
 )
 
+var (
+	routeAlpine   = fmt.Sprintf("/%v", consts.PathAlpineJS)
+	routeSemantic = fmt.Sprintf("/%v", consts.PathSemantic)
+	routeStyles   = fmt.Sprintf("/%v", consts.PathStyles)
+	routeFonts    = fmt.Sprintf("/%v", consts.PathFonts)
+	routeFavicon  = "/favicon.ico"
+)
+
+func router(w http.ResponseWriter, r *http.Request) {
+	if strings.Index(r.URL.Path, routeFonts) == 0 {
+		getFonts(w, r)
+	} else {
+		switch r.URL.Path {
+		case "/nojs":
+			getNoJs(w, r)
+		case "/min":
+			getMin(w, r)
+		case "/gen":
+			getGenPassword(w, r)
+		case "/robots.txt":
+			getRobotsTxt(w, r)
+		case "/healthcheck":
+			getHealthCheck(w, r)
+		case routeAlpine:
+			getAlpine(w, r)
+		case routeSemantic:
+			getSemantic(w, r)
+		case routeStyles:
+			getStyles(w, r)
+		case routeFavicon:
+			getFavicon(w, r)
+		case "/":
+			fallthrough
+		default:
+			getIndex(w, r)
+		}
+	}
+}
+
 func getAlpine(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Add(consts.ContentEncodingHeader, consts.ContentEncodingGzipHeaderValue)
 	w.Header().Add(consts.ContentTypeHeader, "application/javascript")
@@ -110,9 +149,41 @@ func getIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getNoJs(w http.ResponseWriter, r *http.Request) {
+	startTime := time.Now()
+
+	renderers.Index(w, r, Words, NoJs)
+
+	finishedTime := time.Now()
+
+	elapsed := finishedTime.Sub(startTime)
+
+	// enforce a minimum response time of ~30ms
+	if elapsed.Milliseconds() < 30 {
+		randSleep := time.Duration(30+utils.GetRandomInt(50)) * time.Millisecond
+		time.Sleep(randSleep - elapsed)
+	}
+}
+
+func getMin(w http.ResponseWriter, r *http.Request) {
+	startTime := time.Now()
+
+	renderers.Index(w, r, Words, Min)
+
+	finishedTime := time.Now()
+
+	elapsed := finishedTime.Sub(startTime)
+
+	// enforce a minimum response time of ~30ms
+	if elapsed.Milliseconds() < 30 {
+		randSleep := time.Duration(30+utils.GetRandomInt(50)) * time.Millisecond
+		time.Sleep(randSleep - elapsed)
+	}
+}
+
 func getFonts(w http.ResponseWriter, r *http.Request) {
 	// note: gzipping the fonts makes no difference on the resulting size
-	fontTarget := r.URL.Query().Get("font")
+	fontTarget := strings.TrimPrefix(strings.TrimPrefix(r.URL.Path, routeFonts), "/")
 
 	w.Header().Add(consts.ContentTypeHeader, "application/font-woff")
 

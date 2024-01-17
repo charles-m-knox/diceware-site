@@ -1,5 +1,89 @@
-body {
-    margin-top: 3em;
+@media (prefers-color-scheme: dark) {
+    body {
+        margin-top: 3em;
+        background-color: #2c2c2c !important;
+        color: white;
+    }
+
+    input,
+    .label {
+        background-color: #6f6f6f !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    p,
+    label,
+    .header,
+    input,
+    .label {
+        color: rgba(255, 255, 255, .87) !important;
+    }
+
+    .ui.green.button {
+        background-color: #4d9d6a !important;
+    }
+
+    .ui.primary.button {
+        background-color: #5684aa !important;
+    }
+
+    a {
+        color: white !important;
+        text-decoration: underline !important;
+        font-weight: bold;
+    }
+
+    .message {
+        background-color: #575757 !important;
+        color: rgba(255, 255, 255, .87) !important;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    body {
+        margin-top: 3em;
+        color: black !important;
+        background-color: white !important;
+    }
+
+    input,
+    .label {
+        background-color: unset !important;
+    }
+
+    .ui.green.button {
+        background-color: #21ba45 !important;
+    }
+
+    .ui.primary.button {
+        background-color: #2185d0 !important;
+    }
+
+    a {
+        color: #1e70bf !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    p,
+    label,
+    .header,
+    input,
+    .label {
+        color: rgba(0, 0, 0, .87) !important;
+    }
+
+    .message {
+        background-color: #f8f8f9 !important;
+        color: rgba(0, 0, 0, .87) !important;
+    }
 }
 
 .footer-spacer {

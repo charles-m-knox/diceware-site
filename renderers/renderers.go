@@ -7,17 +7,42 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	consts "gitea.cmcode.dev/cmcode/diceware-site/constants"
 	"gitea.cmcode.dev/cmcode/diceware-site/utils"
 )
 
 func handleParams(r *http.Request) (int, string, int, int, bool) {
-	n := r.URL.Query().Get("n")
-	s := r.URL.Query().Get("s")
-	maxLen := r.URL.Query().Get("u")
-	minLen := r.URL.Query().Get("l")
-	extendedWordList := r.URL.Query().Get("e")
+	var n string
+
+	var s string
+
+	var maxLen string
+
+	var minLen string
+
+	var extendedWordList string
+
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+
+		n = r.Form.Get("n")
+		s = r.Form.Get("s")
+		maxLen = r.Form.Get("u")
+		minLen = r.Form.Get("l")
+		extendedWordList = r.Form.Get("e")
+	} else {
+		n = r.URL.Query().Get("n")
+		s = r.URL.Query().Get("s")
+		maxLen = r.URL.Query().Get("u")
+		minLen = r.URL.Query().Get("l")
+		extendedWordList = r.URL.Query().Get("e")
+	}
+
+	if strings.ToLower(s) == "space" {
+		s = " "
+	}
 
 	// if no values are specified, set the default separator to a space
 	// character - this is because the default load page doesn't specify any
@@ -54,7 +79,10 @@ func handleParams(r *http.Request) (int, string, int, int, bool) {
 	}
 
 	extendedWordListBool := false
-	if extendedWordList != "" {
+	// HTML form submits a checked box as "on"
+	if extendedWordList == "on" {
+		extendedWordListBool = true
+	} else if extendedWordList != "" {
 		extendedWordListBool, _ = strconv.ParseBool(extendedWordList)
 	}
 
@@ -109,10 +137,23 @@ func Index(w http.ResponseWriter, r *http.Request, words *utils.Words, index *te
 
 	buf := new(bytes.Buffer)
 
+	failed := false
+
+	if result == "" {
+		failed = true
+	}
+
 	data := map[string]any{
 		"pw":                result,
 		"simpleWordCount":   words.SimpleCount,
 		"extendedWordCount": words.ComplexCount,
+		"nn":                nn,
+		"s":                 s,
+		"maxLenInt":         maxLenInt,
+		"minLenInt":         minLenInt,
+		"e":                 extendedWords,
+		"pwLength":          len(result),
+		"failed":            failed,
 	}
 
 	err := index.Execute(buf, data)

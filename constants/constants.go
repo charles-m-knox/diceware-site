@@ -3,6 +3,8 @@ package constants
 const (
 	PathAlpineJS                   = "static/alpinejs-3.12.0.min.js.gz"
 	PathIndex                      = "templates/index.html"
+	PathNoJs                       = "templates/nojs.html"
+	PathMin                        = "templates/min.html"
 	PathFonts                      = "static/themes/default/assets/fonts"
 	PathFontsLocal                 = "static/fonts"
 	PathFavicon                    = "static/favicon.ico"
