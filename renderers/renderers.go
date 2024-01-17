@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	consts "diceware-site/constants"
-	"diceware-site/utils"
+	consts "gitea.cmcode.dev/cmcode/diceware-site/constants"
+	"gitea.cmcode.dev/cmcode/diceware-site/utils"
 
 	"github.com/gin-gonic/gin"
 )

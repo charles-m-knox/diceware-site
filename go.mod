@@ -1,4 +1,4 @@
-module diceware-site
+module gitea.cmcode.dev/cmcode/diceware-site
 
 go 1.19
 

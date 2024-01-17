@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	consts "diceware-site/constants"
-	"diceware-site/renderers"
-	"diceware-site/utils"
+	consts "gitea.cmcode.dev/cmcode/diceware-site/constants"
+	"gitea.cmcode.dev/cmcode/diceware-site/renderers"
+	"gitea.cmcode.dev/cmcode/diceware-site/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tdewolff/minify"

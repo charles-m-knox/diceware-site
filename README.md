@@ -24,12 +24,12 @@ These files come from [this repository](https://github.com/dwyl/english-words). 
 
 ## Build and deploy
 
-The diceware site is a compiled Go binary that requires a `cert.pem` and a `key.pem` in the same directory as the binary. We will provide easy steps to set this up with both Golang and Docker below.
+The diceware site is a compiled Go binary that requires a `cert.pem` and a `key.pem` in the same directory as the binary. These can be generated using the Makefile.
 
 ### Build with golang
 
 ```bash
-git clone https://gitea.onlinux.org/onlinux.org/diceware-site.git
+git clone https://gitea.cmcode.dev/cmcode/diceware-site.git
 
 cd diceware-site
 
@@ -38,25 +38,8 @@ go get -v
 # build without cgo for compatibility on some cloud systems
 # see `go tool dist list` for supported build targets
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o diceware-site
+make gen-tls-certs # requires interactive prompts to be answered
 ./diceware-site
-```
-
-Next, to deploy with a systemd service, the recommended default setup is as follows:
-
-```bash
-mkdir -p /opt/diceware-site
-cd /opt/diceware-site
-openssl genrsa -out key.pem 2048 && \
-openssl ecparam -genkey -name secp384r1 -out key.pem && \
-openssl req -new -x509 -sha256 -key key.pem -out cert.pem -days 3650
-```
-
-Copy `diceware-site.service` to `/etc/systemd/system/diceware-site.service` and enable it:
-
-```bash
-sudo cp diceware-site.service /etc/systemd/system/diceware-site.service
-sudo systemctl daemon-reload
-sudo systemctl enable --now diceware-site.service
 ```
 
 Test it out:
@@ -72,7 +55,7 @@ curl -kv https://localhost:29102
 The Docker build process is more or less the same difficulty as the Golang build process, but does not require a systemd service.
 
 ```bash
-git clone https://gitea.onlinux.org/onlinux.org/diceware-site.git
+git clone https://gitea.cmcode.dev/cmcode/diceware-site.git
 
 cd diceware-site
 

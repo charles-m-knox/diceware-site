@@ -53,8 +53,16 @@ build-all: mkbuilddir build-linux-amd64 build-linux-arm64 build-win-amd64 build-
 delete-builds:
 	rm $(BUILDDIR)/*
 
-
 gen-tls-certs:
 	openssl genrsa -out key.pem 2048 && \
 	openssl ecparam -genkey -name secp384r1 -out key.pem && \
 	openssl req -new -x509 -sha256 -key key.pem -out cert.pem -days 3650
+
+podman-build:
+	podman build -t gitea.cmcode.dev/cmcode/diceware-site:latest -f containerfile .
+	podman tag gitea.cmcode.dev/cmcode/diceware-site:latest gitea.cmcode.dev/cmcode/diceware-site:v$(VER)
+
+# requires you to run 'podman login gitea.cmcode.dev'
+push-gitea-container-image:
+	podman push gitea.cmcode.dev/cmcode/diceware-site:latest
+	podman push gitea.cmcode.dev/cmcode/diceware-site:v$(VER)
