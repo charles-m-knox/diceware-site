@@ -13,6 +13,10 @@ mkbuilddir:
 build-prod: mkbuilddir
 	CGO_ENABLED=0 go build -v -o $(BIN) -ldflags="-w -s -buildid=" -trimpath
 
+test:
+	go test -test.v -coverprofile=testcov.out ./... && \
+	go tool cover -html=testcov.out
+
 run:
 	./$(BIN)
 
