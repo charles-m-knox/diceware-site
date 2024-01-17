@@ -10,6 +10,11 @@
         background-color: #6f6f6f !important;
     }
 
+    input::selection {
+        background-color: #5684aa !important;
+        color: white;
+    }
+
     h1,
     h2,
     h3,
@@ -65,6 +70,11 @@
 
     a {
         color: #1e70bf !important;
+    }
+
+    input::selection {
+        background-color: unset;
+        color: unset;
     }
 
     h1,
