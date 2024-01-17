@@ -9,17 +9,18 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
 )
 
 const (
-	MAX_ATTEMPTS       = 20000
-	MAX_WORD_LENGTH    = 16
-	MIN_WORD_LENGTH    = 4
-	WORDS_SIMPLE_PATH  = "resources/words_simple.txt"
-	WORDS_COMPLEX_PATH = "resources/words_alpha.txt"
+	MaxAttempts      = 20000
+	MaxWordLength    = 16
+	MinWordLength    = 4
+	WordsSimplePath  = "resources/words_simple.txt"
+	WordsComplexPath = "resources/words_alpha.txt"
 )
 
 var symbols = []string{
@@ -33,18 +34,20 @@ type Words struct {
 	ComplexCount int
 }
 
-// GetRandomInt generates a random number from 0 to m
+// GetRandomInt generates a random number from 0 to m.
 func GetRandomInt(m int) int {
 	k, _ := rand.Int(rand.Reader, big.NewInt(int64(m)))
 
 	return int(k.Int64())
 }
 
+// GetWords loads all words from the given path into memory.
 func GetWords(content embed.FS, path string) (map[int]string, int) {
 	readFile, err := content.Open(path)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("GetWords error: %v", err.Error())
 	}
+
 	fileScanner := bufio.NewScanner(readFile)
 
 	fileScanner.Split(bufio.ScanLines)
@@ -52,6 +55,7 @@ func GetWords(content embed.FS, path string) (map[int]string, int) {
 	result := make(map[int]string)
 
 	i := 0
+
 	for fileScanner.Scan() {
 		w := fileScanner.Text()
 		result[i] = w
@@ -70,12 +74,13 @@ func GetWords(content embed.FS, path string) (map[int]string, int) {
 func getRandomWord(m map[int]string) string {
 	for {
 		k := GetRandomInt(len(m))
+
 		v, ok := m[k]
 		if !ok {
 			return ""
 		}
 
-		if len(v) < MIN_WORD_LENGTH || len(v) > MAX_WORD_LENGTH {
+		if len(v) < MinWordLength || len(v) > MaxWordLength {
 			continue
 		}
 
@@ -84,7 +89,7 @@ func getRandomWord(m map[int]string) string {
 }
 
 // getRandomSymbol returns a random symbol from the list of symbols defined
-// in this package
+// in this package.
 func getRandomSymbol() string {
 	return symbols[GetRandomInt(len(symbols)-1)]
 }
@@ -99,7 +104,7 @@ func getRandomSymbol() string {
 //
 // maxLen=maximum allowable length of the resulting password
 //
-// minLen=minimum allowable length of the resulting password
+// minLen=minimum allowable length of the resulting password.
 func GeneratePassword(words *Words, n int, s string, maxLen int, minLen int, extendedWords bool) string {
 	startTime := time.Now()
 
@@ -124,11 +129,11 @@ func GeneratePassword(words *Words, n int, s string, maxLen int, minLen int, ext
 
 	// brute-force generate words and ensure that they're within the requested
 	// maxLen and minLen
-	for attempts := 1; attempts <= MAX_ATTEMPTS; attempts++ {
-
+	for attempts := 1; attempts <= MaxAttempts; attempts++ {
 		// abort if the operation has taken longer than 1 seconds
 		if startTime.Add(1 * time.Second).Before(time.Now()) {
 			log.Println("debug: operation took too long, canceling")
+
 			return ""
 		}
 
@@ -137,15 +142,17 @@ func GeneratePassword(words *Words, n int, s string, maxLen int, minLen int, ext
 		pwlen := sb.Len() + 2
 
 		if pwlen <= maxLen && pwlen >= minLen {
-			sb.WriteString(fmt.Sprintf("%v", GetRandomInt(9)))
+			sb.WriteString(strconv.Itoa(GetRandomInt(9)))
 			sb.WriteString(getRandomSymbol())
+
 			break
 		}
 
 		sb.Reset()
 
-		if attempts >= MAX_ATTEMPTS {
+		if attempts >= MaxAttempts {
 			log.Println("debug: exceeded maximum attempts to generate password")
+
 			return ""
 		}
 	}
@@ -155,24 +162,52 @@ func GeneratePassword(words *Words, n int, s string, maxLen int, minLen int, ext
 	// capitalize the first letter
 	rstr := []rune(result)
 	rstr[0] = unicode.ToUpper(rstr[0])
+
 	return string(rstr)
 }
 
-// GzStr gzips a string
+// GzStr gzips a string.
 func GzStr(s string) (string, error) {
 	var b bytes.Buffer
+
 	gz := gzip.NewWriter(&b)
+
 	_, err := gz.Write([]byte(s))
 	if err != nil {
 		return "", fmt.Errorf(
-			"failed to gzip str: %v", err.Error(),
+			"failed to gzip str: %w", err,
 		)
 	}
+
 	err = gz.Close()
 	if err != nil {
 		return "", fmt.Errorf(
-			"failed to close gzip buffer: %v", err.Error(),
+			"failed to close gzip buffer: %w", err,
 		)
 	}
+
 	return b.String(), nil
+}
+
+// GzStr gzips a byte buffer.
+func GzBytes(s []byte) ([]byte, error) {
+	var b bytes.Buffer
+
+	gz := gzip.NewWriter(&b)
+
+	_, err := gz.Write(s)
+	if err != nil {
+		return []byte{}, fmt.Errorf(
+			"failed to gzip bytes: %w", err,
+		)
+	}
+
+	err = gz.Close()
+	if err != nil {
+		return []byte{}, fmt.Errorf(
+			"failed to close gzip buffer: %w", err,
+		)
+	}
+
+	return b.Bytes(), nil
 }

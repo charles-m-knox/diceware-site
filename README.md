@@ -9,6 +9,7 @@ Generated passwords are capable of meeting the majority of websites' odd passwor
 - [diceware-site](#diceware-site)
   - [Table of contents](#table-of-contents)
   - [Run it quickly](#run-it-quickly)
+  - [Run it quickly, with TLS](#run-it-quickly-with-tls)
   - [Setup](#setup)
     - [Build with golang](#build-with-golang)
   - [Attributions](#attributions)
@@ -17,15 +18,21 @@ Generated passwords are capable of meeting the majority of websites' odd passwor
 ## Run it quickly
 
 ```bash
-make gen-tls-certs # requires interactive prompts to be answered
-podman pull gitea.cmcode.dev/cmcode/diceware-site:latest
-
 podman run --rm -it \
-  -v "${PWD}/cert.pem:/site/cert.pem:ro" \
-  -v "${PWD}/key.pem:/site/key.pem:ro" \
-  -w /site \
-  -p "127.0.0.1:29103:29102" \
+  -p "127.0.0.1:29102:29102" \
   gitea.cmcode.dev/cmcode/diceware-site:latest
+```
+
+## Run it quickly, with TLS
+
+```bash
+make gen-tls-certs # requires interactive prompts to be answered
+podman run --rm -it \
+  -v "${PWD}/cert.pem:/cert.pem:ro" \
+  -v "${PWD}/key.pem:/key.pem:ro" \
+  -p "127.0.0.1:29103:29102" \
+  gitea.cmcode.dev/cmcode/diceware-site:latest \
+    /diceware-site -cert /cert.pem -key /key.pem -addr 0.0.0.0:29102
 ```
 
 ## Setup

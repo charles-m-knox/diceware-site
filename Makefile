@@ -1,7 +1,7 @@
 .PHONY=build
 
 BUILDDIR=build
-VER=0.0.1
+VER=0.0.2
 BIN=$(BUILDDIR)/diceware-site-v$(VER)
 
 build-dev:
@@ -66,3 +66,12 @@ podman-build:
 push-gitea-container-image:
 	podman push gitea.cmcode.dev/cmcode/diceware-site:latest
 	podman push gitea.cmcode.dev/cmcode/diceware-site:v$(VER)
+
+podman-run:
+	podman rm -f diceware-site || true
+	podman run -d \
+		-p "127.0.0.1:29102:29102" \
+		--restart=unless-stopped \
+		--name=diceware-site \
+		-it diceware-site:latest
+	podman logs -f diceware-site

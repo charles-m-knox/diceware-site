@@ -2,47 +2,54 @@ package utils
 
 import (
 	"log"
+	"slices"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRandomInt(t *testing.T) {
 	// a very naive testing method that just generates a bunch
 	// of GetRandomInt values and asserts that none of them are outside
 	// the specified range
-
 	maxInt := 10
 
 	for i := 0; i < 2500; i++ {
 		actual := GetRandomInt(maxInt)
-		assert.LessOrEqual(t, actual, maxInt)
-		assert.GreaterOrEqual(t, actual, 0)
+		if actual > maxInt {
+			t.Fail()
+		}
+
+		if actual < 0 {
+			t.Fail()
+		}
 	}
 }
 
 func TestGetRandomSymbol(t *testing.T) {
 	for i := 0; i < 2500; i++ {
 		actual := getRandomSymbol()
-		assert.Contains(t, symbols, actual)
+		if !slices.Contains(symbols, actual) {
+			t.Fail()
+		}
 	}
 }
 
 func setupRandomWordTest() ([]string, *Words) {
 	// generate a min-length string
 	sb := new(strings.Builder)
-	for i := 0; i < MIN_WORD_LENGTH; i++ {
+	for i := 0; i < MinWordLength; i++ {
 		sb.WriteString("a")
 	}
+
 	shortWord := sb.String()
 
 	sb.Reset()
 
 	// generate a max-length string
-	for i := 0; i < MAX_WORD_LENGTH+1; i++ {
+	for i := 0; i < MaxWordLength+1; i++ {
 		sb.WriteString("a")
 	}
+
 	longWord := sb.String()
 
 	// there's probably a more efficient way to do this but it's not critical
@@ -81,11 +88,23 @@ func TestGetRandomWord(t *testing.T) {
 	validWords, words := setupRandomWordTest()
 
 	for i := 0; i < 5000; i++ {
-		actual := getRandomWord(*(*words).Complex)
-		assert.LessOrEqual(t, len(actual), MAX_WORD_LENGTH)
-		assert.GreaterOrEqual(t, len(actual), MIN_WORD_LENGTH)
-		assert.Contains(t, validWords, actual)
-		assert.NotEqual(t, "", actual)
+		actual := getRandomWord(*words.Complex)
+
+		if len(actual) > MaxWordLength {
+			t.Fail()
+		}
+
+		if len(actual) < MinWordLength {
+			t.Fail()
+		}
+
+		if !slices.Contains(validWords, actual) {
+			t.Fail()
+		}
+
+		if actual == "" {
+			t.Fail()
+		}
 	}
 }
 
@@ -115,12 +134,23 @@ func TestGeneratePassword(t *testing.T) {
 		actual := GeneratePassword(words, test.n, test.s, test.maxLen, test.minLen, false)
 
 		if test.shouldSucceed {
-			assert.LessOrEqual(t, len(actual), test.maxLen)
-			assert.GreaterOrEqual(t, len(actual), test.minLen)
-			assert.NotEqual(t, "", actual)
+			if len(actual) > test.maxLen {
+				t.Fail()
+			}
+
+			if len(actual) < test.minLen {
+				t.Fail()
+			}
+
+			if actual == "" {
+				t.Fail()
+			}
+
 			continue
 		}
 
-		assert.Equal(t, "", actual)
+		if actual != "" {
+			t.Fail()
+		}
 	}
 }
