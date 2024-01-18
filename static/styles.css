@@ -49,10 +49,11 @@
 }
 
 @media (prefers-color-scheme: light) {
-    body {
+    /* these are left here for reference */
+    /* body {
         margin-top: 3em;
-        color: black !important;
-        background-color: white !important;
+        color: unset;
+        background-color: unset !important;
     }
 
     input,
@@ -87,13 +88,13 @@
     .header,
     input,
     .label {
-        color: rgba(0, 0, 0, .87) !important;
+        color: unset;
     }
 
     .message {
         background-color: #f8f8f9 !important;
-        color: rgba(0, 0, 0, .87) !important;
-    }
+        color: unset;
+    } */
 }
 
 .footer-spacer {

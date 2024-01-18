@@ -1,7 +1,7 @@
 .PHONY=build
 
 BUILDDIR=build
-VER=0.1.1
+VER=0.1.2
 BIN=$(BUILDDIR)/diceware-site-v$(VER)
 
 build-dev:
