@@ -16,4 +16,4 @@ RUN upx --best -o ./diceware-site diceware-site-uncompressed
 FROM docker.io/library/alpine:latest
 COPY --from=builder /site/diceware-site /diceware-site
 
-CMD ["/diceware-site"]
+ENTRYPOINT ["/diceware-site"]

@@ -1,10 +1,10 @@
-module gitea.cmcode.dev/cmcode/diceware-site
+module git.cmcode.dev/cmcode/diceware-site
 
-go 1.21
-
-require github.com/tdewolff/minify v2.3.6+incompatible
+go 1.22.5
 
 require (
-	github.com/tdewolff/parse v2.3.4+incompatible // indirect
-	github.com/tdewolff/test v1.0.7 // indirect
+	git.cmcode.dev/cmcode/go-dicewarelib v0.0.0-20240810042815-579fc62bc2ec
+	github.com/tdewolff/minify/v2 v2.20.37
 )
+
+require github.com/tdewolff/parse/v2 v2.7.15 // indirect

@@ -1,8 +1,12 @@
 .PHONY=build
 
 BUILDDIR=build
-VER=0.1.2
-BIN=$(BUILDDIR)/diceware-site-v$(VER)
+VER=0.2.0
+FILE=diceware-site
+BIN=$(BUILDDIR)/$(FILE)-v$(VER)
+OUT_BIN_DIR=~/.local/bin
+UNAME=$(shell go env GOOS)
+ARCH=$(shell go env GOARCH)
 
 build-dev:
 	CGO_ENABLED=0 go build -v
@@ -11,7 +15,7 @@ mkbuilddir:
 	mkdir -p $(BUILDDIR)
 
 build-prod: mkbuilddir
-	CGO_ENABLED=0 go build -v -o $(BIN) -ldflags="-w -s -buildid=" -trimpath
+	make build-$(UNAME)-$(ARCH)
 
 test:
 	go test -test.v -coverprofile=testcov.out ./... && \
@@ -22,6 +26,10 @@ run:
 
 lint:
 	golangci-lint run ./...
+
+install:
+	rsync -avP ./$(BIN)-$(UNAME)-$(ARCH) $(OUT_BIN_DIR)/$(FILE)
+	chmod +x $(OUT_BIN_DIR)/$(FILE)
 
 compress-prod: mkbuilddir
 	rm -f $(BIN)-compressed
@@ -63,13 +71,13 @@ gen-tls-certs:
 	openssl req -new -x509 -sha256 -key key.pem -out cert.pem -days 3650
 
 podman-build:
-	podman build -t gitea.cmcode.dev/cmcode/diceware-site:latest -f containerfile .
-	podman tag gitea.cmcode.dev/cmcode/diceware-site:latest gitea.cmcode.dev/cmcode/diceware-site:v$(VER)
+	podman build -t git.cmcode.dev/cmcode/diceware-site:latest -f containerfile .
+	podman tag git.cmcode.dev/cmcode/diceware-site:latest git.cmcode.dev/cmcode/diceware-site:v$(VER)
 
-# requires you to run 'podman login gitea.cmcode.dev'
+# requires you to run 'podman login git.cmcode.dev'
 push-gitea-container-image:
-	podman push gitea.cmcode.dev/cmcode/diceware-site:latest
-	podman push gitea.cmcode.dev/cmcode/diceware-site:v$(VER)
+	podman push git.cmcode.dev/cmcode/diceware-site:latest
+	podman push git.cmcode.dev/cmcode/diceware-site:v$(VER)
 
 podman-run:
 	podman rm -f diceware-site || true

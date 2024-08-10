@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Diceware Password Generator</title>
+    <link rel="stylesheet" type="text/css" href="/css.css">
+    <link rel="icon" type="image/svg+xml" href="/static/i.svg">
+</head>
+
+<body>
+    <div class="c">
+        <h1>Diceware Password Generator</h1>
+        <h3>Generates secure passwords that meet most site requirements</h3>
+        {{ if .failed }}
+        <p>
+            The password generation settings you chose did not produce a result in a timely fashion, or
+            there was a network error.
+        </p>
+        <p>
+            To prevent abuse of this free service, <b>any password generation requests that take longer than
+                <u>one second</u> will be canceled.</b> Try different settings, such as reducing the number
+            of words, or increasing the minimum password length.
+        </p>
+        {{ end }}
+
+        <div class="mf">
+            <p><label for="o">Generated Password (length={{ .pwLength }}):</label></p>
+            <p><input type="text" class="i" name="o" value="{{ .pw }}" {{ if eq .pw "" }}
+                    placeholder="Try different settings" {{ end }} readonly>
+            </p>
+        </div>
+        <div class="mf">
+            <form action="/" method="post" id="p" target="_self">
+                <p><label for="s">Separator (space=default)</label></p>
+                <p><input class="i" id="s" name="s" type="text" form="p" placeholder="" value="{{ .s }}"></p>
+                <p><label for="n">Number of Words</label></p>
+                <p><input class="i" id="n" name="n" type="number" form="p" placeholder="" value="{{ .nn }}" min="1"
+                        max="20"></p>
+                <p><label for="u">Max Length</label> </p>
+                <p><input class="i" id="u" name="u" type="number" form="p" placeholder="" value="{{ .maxLenInt }}"
+                        min="12" max="256"></p>
+                <p><label for="l">Min Length</label></p>
+                <p><input class="i" id="l" name="l" type="number" form="p" placeholder="" value="{{ .minLenInt }}"
+                        min="6" max="192"></p>
+                {{ if .flagExtra }}
+                <p><input id="e" name="e" type="checkbox" form="p" {{ if .e }}checked{{ end }} />
+                    <label for="e">Use Extended Word List</label>
+                </p>
+                {{ end }}
+                <button type="submit" form="p" class="g">
+                    Generate
+                </button>
+            </form>
+        </div>
+        <p><a href="https://git.cmcode.dev/cmcode/diceware-site" rel="noopener noreferrer nofollow">
+                Source code
+            </a></p>
+    </div>
+</body>
+
+</html>

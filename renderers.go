@@ -1,4 +1,4 @@
-package renderers
+package main
 
 import (
 	"bytes"
@@ -9,35 +9,33 @@ import (
 	"strconv"
 	"strings"
 
-	consts "gitea.cmcode.dev/cmcode/diceware-site/constants"
-	"gitea.cmcode.dev/cmcode/diceware-site/utils"
+	dice "git.cmcode.dev/cmcode/go-dicewarelib"
 )
 
 func handleParams(r *http.Request) (int, string, int, int, bool) {
 	var n string
-
 	var s string
-
 	var maxLen string
-
 	var minLen string
-
-	var extendedWordList string
+	var extra string
 
 	if r.Method == http.MethodPost {
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			log.Printf("handleParams failed to parse: %v", err.Error())
+		}
 
 		n = r.Form.Get("n")
 		s = r.Form.Get("s")
 		maxLen = r.Form.Get("u")
 		minLen = r.Form.Get("l")
-		extendedWordList = r.Form.Get("e")
+		extra = r.Form.Get("e")
 	} else {
 		n = r.URL.Query().Get("n")
 		s = r.URL.Query().Get("s")
 		maxLen = r.URL.Query().Get("u")
 		minLen = r.URL.Query().Get("l")
-		extendedWordList = r.URL.Query().Get("e")
+		extra = r.URL.Query().Get("e")
 	}
 
 	if strings.ToLower(s) == "space" {
@@ -78,31 +76,29 @@ func handleParams(r *http.Request) (int, string, int, int, bool) {
 		minLenInt, _ = strconv.ParseInt(minLen, 10, 64)
 	}
 
-	extendedWordListBool := false
+	useExtra := false
 	// HTML form submits a checked box as "on"
-	if extendedWordList == "on" {
-		extendedWordListBool = true
-	} else if extendedWordList != "" {
-		extendedWordListBool, _ = strconv.ParseBool(extendedWordList)
+	if extra == "on" {
+		useExtra = true
+	} else if extra != "" {
+		useExtra, _ = strconv.ParseBool(extra)
 	}
 
-	return int(nn), s, int(maxLenInt), int(minLenInt), extendedWordListBool
+	return int(nn), s, int(maxLenInt), int(minLenInt), useExtra
 }
 
-func GenPassword(w http.ResponseWriter, r *http.Request, words *utils.Words) {
+// Generates a password via an API call.
+func renderGenPassword(w http.ResponseWriter, r *http.Request, words *dice.Words) {
 	nn, s, maxLenInt, minLenInt, extendedWords := handleParams(r)
 
-	result := make(map[string]string)
-	result["p"] = utils.GeneratePassword(
-		words,
-		nn,
-		s,
-		maxLenInt,
-		minLenInt,
-		extendedWords,
-	)
+	if !flagExtra {
+		extendedWords = false
+	}
 
-	w.Header().Add(consts.ContentTypeHeader, "application/json")
+	result := make(map[string]string)
+	result["p"] = dice.GeneratePassword(words, nn, s, maxLenInt, minLenInt, extendedWords)
+
+	w.Header().Add(contentTypeHeader, "application/json")
 
 	b, err := json.Marshal(result)
 	if err != nil {
@@ -111,8 +107,6 @@ func GenPassword(w http.ResponseWriter, r *http.Request, words *utils.Words) {
 
 		return
 	}
-
-	// TODO: check if length > 512 and if so, gzip the result
 
 	_, err = w.Write(b)
 	if err != nil {
@@ -123,22 +117,12 @@ func GenPassword(w http.ResponseWriter, r *http.Request, words *utils.Words) {
 	}
 }
 
-func Index(w http.ResponseWriter, r *http.Request, words *utils.Words, index *template.Template) {
+// Generates a password and renders the index template.
+func renderIndex(w http.ResponseWriter, r *http.Request, words *dice.Words, index *template.Template) {
 	nn, s, maxLenInt, minLenInt, extendedWords := handleParams(r)
-
-	result := utils.GeneratePassword(
-		words,
-		nn,
-		s,
-		maxLenInt,
-		minLenInt,
-		extendedWords,
-	)
-
+	result := dice.GeneratePassword(words, nn, s, maxLenInt, minLenInt, extendedWords)
 	buf := new(bytes.Buffer)
-
 	failed := false
-
 	if result == "" {
 		failed = true
 	}
@@ -154,6 +138,7 @@ func Index(w http.ResponseWriter, r *http.Request, words *utils.Words, index *te
 		"e":                 extendedWords,
 		"pwLength":          len(result),
 		"failed":            failed,
+		"flagExtra":         flagExtra,
 	}
 
 	err := index.Execute(buf, data)
@@ -164,18 +149,9 @@ func Index(w http.ResponseWriter, r *http.Request, words *utils.Words, index *te
 		return
 	}
 
-	resultgz, err := utils.GzBytes(buf.Bytes())
-	if err != nil {
-		log.Printf("failed to gzip result: %v", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+	w.Header().Add(contentTypeHeader, "text/html")
 
-		return
-	}
-
-	w.Header().Add(consts.ContentEncodingHeader, consts.ContentEncodingGzipHeaderValue)
-	w.Header().Add(consts.ContentTypeHeader, "text/html")
-
-	_, err = w.Write(resultgz)
+	_, err = w.Write(buf.Bytes())
 	if err != nil {
 		log.Printf("failed to write gzip result to w: %v", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
