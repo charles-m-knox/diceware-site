@@ -1,15 +1,17 @@
 .PHONY=build
 
 BUILDDIR=build
-VER=0.2.0
+VER=0.2.1
 FILE=diceware-site
 BIN=$(BUILDDIR)/$(FILE)-v$(VER)
 OUT_BIN_DIR=~/.local/bin
 UNAME=$(shell go env GOOS)
 ARCH=$(shell go env GOARCH)
+BUILD_ENV=CGO_ENABLED=0
+BUILD_FLAGS=-ldflags="-w -s -buildid= -X main.version=$(VER)" -trimpath
 
 build-dev:
-	CGO_ENABLED=0 go build -v
+	$(BUILD_ENV) go build -v
 
 mkbuilddir:
 	mkdir -p $(BUILDDIR)
@@ -35,32 +37,35 @@ compress-prod: mkbuilddir
 	rm -f $(BIN)-compressed
 	upx --best -o ./$(BIN)-compressed $(BIN)
 
-build-mac-arm64: mkbuilddir
-	CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build -v -o $(BIN)-darwin-arm64 -ldflags="-w -s -buildid=" -trimpath
+build-darwin-arm64: mkbuilddir
+	$(BUILD_ENV) GOARCH=arm64 GOOS=darwin go build -v -o $(BIN)-darwin-arm64 $(BUILD_FLAGS)
 	rm -f $(BIN)-darwin-arm64.xz
 	xz -9 -e -T 12 -vv $(BIN)-darwin-arm64
 
-build-mac-amd64: mkbuilddir
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build -v -o $(BIN)-darwin-amd64 -ldflags="-w -s -buildid=" -trimpath
+build-darwin-amd64: mkbuilddir
+	$(BUILD_ENV) GOARCH=amd64 GOOS=darwin go build -v -o $(BIN)-darwin-amd64 $(BUILD_FLAGS)
 	rm -f $(BIN)-darwin-amd64.xz
 	xz -9 -e -T 12 -vv $(BIN)-darwin-amd64
 
 build-win-amd64: mkbuilddir
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -v -o $(BIN)-win-amd64-uncompressed -ldflags="-w -s -buildid=" -trimpath
+	$(BUILD_ENV) GOARCH=amd64 GOOS=windows go build -v -o $(BIN)-win-amd64-uncompressed $(BUILD_FLAGS)
 	rm -f $(BIN)-win-amd64
 	upx --best -o ./$(BIN)-win-amd64 $(BIN)-win-amd64-uncompressed
 
 build-linux-arm64: mkbuilddir
-	CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build -v -o $(BIN)-linux-arm64-uncompressed -ldflags="-w -s -buildid=" -trimpath
+	$(BUILD_ENV) GOARCH=arm64 GOOS=linux go build -v -o $(BIN)-linux-arm64-uncompressed $(BUILD_FLAGS)
 	rm -f $(BIN)-linux-arm64
 	upx --best -o ./$(BIN)-linux-arm64 $(BIN)-linux-arm64-uncompressed
 
 build-linux-amd64: mkbuilddir
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -v -o $(BIN)-linux-amd64-uncompressed -ldflags="-w -s -buildid=" -trimpath
+	$(BUILD_ENV) GOARCH=amd64 GOOS=linux go build -v -o $(BIN)-linux-amd64-uncompressed $(BUILD_FLAGS)
 	rm -f $(BIN)-linux-amd64
 	upx --best -o ./$(BIN)-linux-amd64 $(BIN)-linux-amd64-uncompressed
 
+
 build-all: mkbuilddir build-linux-amd64 build-linux-arm64 build-win-amd64 build-mac-amd64 build-mac-arm64
+
+# specific tasks
 
 delete-builds:
 	rm $(BUILDDIR)/*
