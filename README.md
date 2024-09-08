@@ -24,7 +24,7 @@ By default, the extended word list is not used. It can be enabled with the `-x` 
 
 ```bash
 podman run --rm -it -p "127.0.0.1:29102:29102" \
-  github.com/charles-m-knox/diceware-site:latest
+  ghcr.io/charles-m-knox/diceware-site:latest
 ```
 
 ## Run it quickly, with TLS
@@ -38,7 +38,7 @@ podman run --rm -it \
   -v "${PWD}/cert.pem:/cert.pem:ro" \
   -v "${PWD}/key.pem:/key.pem:ro" \
   -p "127.0.0.1:29103:29102" \
-  github.com/charles-m-knox/diceware-site:latest \
+  ghcr.io/charles-m-knox/diceware-site:latest \
     /diceware-site -cert /cert.pem -key /key.pem -addr 0.0.0.0:29102
 ```
 
