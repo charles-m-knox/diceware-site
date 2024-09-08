@@ -1,7 +1,7 @@
 .PHONY=build
 
 BUILDDIR=build
-VER=0.2.1
+VER=0.2.2
 FILE=diceware-site
 BIN=$(BUILDDIR)/$(FILE)-v$(VER)
 OUT_BIN_DIR=~/.local/bin
@@ -76,13 +76,13 @@ gen-tls-certs:
 	openssl req -new -x509 -sha256 -key key.pem -out cert.pem -days 3650
 
 podman-build:
-	podman build -t git.cmcode.dev/cmcode/diceware-site:latest -f containerfile .
-	podman tag git.cmcode.dev/cmcode/diceware-site:latest git.cmcode.dev/cmcode/diceware-site:v$(VER)
+	podman build -t ghcr.io/charles-m-knox/diceware-site:latest -f containerfile .
+	podman tag ghcr.io/charles-m-knox/diceware-site:latest ghcr.io/charles-m-knox/diceware-site:v$(VER)
 
-# requires you to run 'podman login git.cmcode.dev'
-push-gitea-container-image:
-	podman push git.cmcode.dev/cmcode/diceware-site:latest
-	podman push git.cmcode.dev/cmcode/diceware-site:v$(VER)
+# requires you to run 'podman login ghcr.io'
+push-container-image:
+	podman push ghcr.io/charles-m-knox/diceware-site:latest
+	podman push ghcr.io/charles-m-knox/diceware-site:v$(VER)
 
 podman-run:
 	podman rm -f diceware-site || true

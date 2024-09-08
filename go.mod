@@ -1,4 +1,4 @@
-module git.cmcode.dev/cmcode/diceware-site
+module github.com/charles-m-knox/diceware-site
 
 go 1.22.5
 

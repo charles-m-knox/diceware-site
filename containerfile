@@ -1,5 +1,7 @@
 FROM docker.io/library/golang:alpine AS builder
 
+LABEL org.opencontainers.image.source "https://github.com/charles-m-knox/diceware-site"
+
 RUN apk add upx
 
 WORKDIR /site
